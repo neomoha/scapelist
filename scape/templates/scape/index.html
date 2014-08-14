@@ -1,0 +1,76 @@
+{% extends "scape/base.html" %}
+{% load staticfiles %}
+
+{% block script %}
+        <script type="text/javascript">
+        var instagram = {"CLIENT_ID": "44c7b4bf23c6498cbca1e868f1266bb2", "CLIENT_SECRET": "52854723a1a043b9958f0a428bbeb518"};  
+        String.prototype.replaceAll = function (find, replace) {
+            var str = this;
+            return str.replace(new RegExp(find, 'g'), replace);
+        };
+
+        function search(query){
+            query = query.replaceAll(" ", "");
+            url = "/scape/search/"+query;
+            $("#gallery").html('<div id="loading"><img src="{% static "scape/img/ajax-loader.gif" %}" /></div>');
+            $.ajax({
+                dataType: "json",
+                url: url,
+                data: "",
+                success: function( data ) {
+                    if (data.length > 0){
+                        items = []
+                        $.each(data, function(i, obj) {
+                            items.push( "<a href='/scape/media/"+query+"/"+obj.instagram_id+"'><img id='" + obj.instagram_id +
+                                       "' src='"+obj.thumbnail+"' alt='"+obj.instagram_link+"'/></a>" );
+                        });
+                        $('#gallery').html('<div id="thumbs">\n'+items.join("\n")+'</div>\n');
+                    }else{
+                        $("#gallery").html("Sorry, no results found");
+                    }
+                }
+            });
+        }
+        $(document).ready(function(){
+            $(document).on("click", "#submit", function(event){
+                event.preventDefault();
+                var query = $("input#suggest").val();
+                search(query);
+            });
+            {% if query %}
+                $("input#suggest").val("{{query}}");
+                $("#submit").trigger("click");
+            {% endif %}
+        });
+         
+        </script>
+{% endblock %}
+
+{% block content %}
+        <div id="query">
+            <form autocomplete="off">
+                <input type="text" id="suggest" class="textquery ui-corner-all"/>
+                <input type="submit" id="submit" value="Search" />
+            </form>
+        </div>
+        
+        <div id="gallery">
+            <h3>Recent Landscapes</h3>
+            <div id="thumbs">
+                {% for item in recent %}
+                    <a href='/scape/media/{{ item.keyword }}/{{ item.instagram_id }}'>
+                        <img id='{{ item.instagram_id }}' src='{{ item.thumbnail }}' alt='{{ item.instagram_link }}' title='{{ item.keyword }}'/>
+                    </a>
+                {% endfor %}
+            </div>
+            <h3>Popular Landscapes</h3>
+            <div id="thumbs">
+                {% for item in popular %}
+                    <a href='/scape/media/{{ item.keyword }}/{{ item.instagram_id }}'>
+                        <img id='{{ item.instagram_id }}' src='{{ item.thumbnail }}' alt='{{ item.instagram_link }}' title='{{ item.keyword }}'/>
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+
+{% endblock %}

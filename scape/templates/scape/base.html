@@ -1,0 +1,77 @@
+{% load staticfiles %}
+
+
+<html>
+    <head>
+        <title>ScapeList</title>
+        <!--<link rel="stylesheet" type="text/css" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery.ui.all.css" />-->
+        <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.4/themes/blitzer/jquery-ui.css">
+        
+        <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Tangerine|Droid+Sans|Open+Sans">
+        <link rel="stylesheet" type="text/css" href="{% static 'scape/css/main.css' %}" />
+        
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+        <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+        
+        {% block script %}
+        {% endblock %}
+    </head>
+     
+    <body>
+        <div id="metaheader">
+            <div id="powered">
+                <a href="http://www.instagram.com/">
+                        <img class="logolink" src="{% static 'scape/img/instagram.jpg' %}" alt="Instagram" height="42">
+                </a>
+                <a href="http://www.echonest.com/">
+                        <img class="logolink" src="{% static 'scape/img/echonest.gif' %}" alt="Echonest" width="70">
+                </a>
+                <a href="http://www.spotify.com/">
+                        <img class="logolink" src="{% static 'scape/img/spotify.jpg' %}" alt="Spotify" height="42">
+                </a>
+                <br/>
+                <span class="poweredby">powered by</span>
+            </div>
+            
+            <div id="user_options">
+                {% if user.is_authenticated %}
+                    <div href="#" id="user">
+                        <a href="#">{{ user.username }} <img width="32" src="{% static 'scape/img/avatar.png' %}" /></a>
+                        <a href="/accounts/logout?next={% firstof request.path '/' %}">logout</a>
+                        <!--<div id="userOptions">
+                            <h3>Hi <b>{{ user.username }}!</b></h3>
+                            <img src="{% static 'scape/img/avatar.png' %}" />
+                            <a href="{{ logout_url }}?next={% firstof request.path '/' %}">LOGOUT</a>
+                        </div>-->
+                        
+                </div>
+                {% else %}
+                    <div href="#" id="guest">
+                        <a href="#">guest<img width="32" src="{% static 'scape/img/avatar.png' %}" /></a>
+                        <a href="/accounts/login?next={% firstof request.path '/' %}">login</a>
+                        <a href="/accounts/register">register</a>
+                        <!--<div id="guestOptions">
+                            <div id="userArrow"></div>
+                            <h3>Hi! what do you want to do?</h3>
+                            <a href="{{ login_url }}?next={% firstof request.path '/' %}">LOGIN</a>
+                            <a href="{{ register_url }}">REGISTER</a>
+                        </div>-->
+                        
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div id="header">
+                <h1><a href="/">ScapeList</a></h1>
+                {% block header %}
+                {% endblock %}
+            </div>
+        </div>
+        
+        <div id="content">
+        {% block content %}
+        {% endblock %}
+        </div>
+        
+    </body>
+</html>

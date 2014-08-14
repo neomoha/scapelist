@@ -1,0 +1,14 @@
+{% extends "scape/base.html" %}
+{% load staticfiles %}
+
+{% block content %}
+    <div id="gallery">
+        <div id="thumbs">
+            {% for obj in media %}
+                <a href='/scape/media/{{ keyword }}/{{ obj.instagram_id }}'>
+                    <img id='{{ obj.instagram_id }}' src='{{ obj.thumbnail }}' alt='{{ obj.instagram_link }}'/>
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

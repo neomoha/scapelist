@@ -1,0 +1,153 @@
+{% extends "scape/base.html" %}
+{% load staticfiles %}
+
+{% block script %}
+    <script type="text/javascript" charset="utf-8">
+        function fill_playlist(tracks){
+            $('#playlist').html('<iframe src="https://embed.spotify.com/?uri=spotify:trackset:ScapeList:'+tracks+
+                                '" width="400" height="480" frameborder="0" allowtransparency="true" style="margin: 0px;"></iframe>');
+        }
+        function attach_song(song, media){
+            console.log(song["id"]);
+            console.log(media["id"]);
+            console.log(media["keyword"]);
+            $.ajax({
+                type:"POST",
+                url:"/scape/attach_song",
+                data: {
+                    'csrfmiddlewaretoken': '{{csrf_token}}',
+                    'media_id': media["id"],
+                    'media_keyword': media["keyword"],
+                    'song_id': song["id"],
+                    'song_trackid': song["trackid"],
+                    'song_artist': song["artist"],
+                    'song_title': song["title"]
+                },
+                success: function(data, textStatus){
+                    console.log("attachment was successful");
+                    fill_playlist(data);
+                    $('#attachment').html('<div id="attached" class="success">The song was attached successfully</div>');
+                },
+                error: function(xhr, textStatus, errorThrown){
+                    window.alert('request failed');
+                }
+            });
+        }
+        
+        function search_song(query){
+            url = "/scape/search_song/"+query;
+            console.log(url);
+            $("#results").html('<div id="loading"><img src="{% static "scape/img/ajax-loader.gif" %}" /></div>');
+            $.ajax({
+                dataType: "json",
+                url: url,
+                data: "",
+                success: function( data ) {
+                    console.log("success");
+                    if (data.length > 0){
+                        items = []
+                        $.each(data, function(i, obj) {
+                            items.push( '<li id="'+obj.echonest_id+'" trackid="'+obj.spotify_trackid+'" artist="'+obj.artist+'" title="'+obj.title+'">'+
+                                       '<img class="song_preview" src="{% static "scape/img/play.png" %}"/><strong><i>'+obj.title+
+                                       '</i></strong> by <strong>'+obj.artist+'</strong> <button class="attach_song_button">attach song</button></li>' );
+                        });
+                        $('#results').html('<ul id="songs">\n'+items.join("\n")+'</ul>\n');
+                    }else{
+                        $("#results").html("Sorry, no results found");
+                    }
+                }
+            });
+        }
+        $(document).ready(function(){
+            /*$( "#preview" ).dialog({
+                autoOpen: false,
+                show: {
+                    effect: "show",
+                    duration: 500
+                },
+                hide: {
+                    effect: "hide",
+                    duration: 500
+                }
+            });
+            $(document).on("click", ".song_preview",  function(event){
+                event.preventDefault();
+                console.log($(this).parent().attr("trackid"));
+                $('#preview').html('<iframe src="https://embed.spotify.com/?uri=spotify:track:'+$(this).parent().attr("trackid")+
+                                   '" frameborder="0" allowtransparency="true"></iframe>');
+                $( "#preview" ).dialog( "open" );
+            });*/
+            $(document).on("click", "#toggle_attach",  function(event){
+                //$( "#add_song" ).dialog( "open" );
+                event.preventDefault();
+                $("#add_song").show();
+            });
+            $("#submit_song").bind("click", function(event){
+                event.preventDefault();
+                var query = $("input#suggest").val();
+                search_song(query);
+            });
+            $(document).on("click", ".attach_song_button",  function(event){
+                event.preventDefault();
+                console.log($(this).attr("class"));
+                var song = {"id": $(this).parent().attr("id"), "trackid": $(this).parent().attr("trackid"),
+                            "artist": $(this).parent().attr("artist"), "title": $(this).parent().attr("title")};
+                var media = {"id": "{{media.instagram_id}}", "keyword": "{{keyword}}"};
+                attach_song(song, media);
+            });
+            {% if user.is_authenticated %}
+                var tracks = "{{playlist}}";
+                {% if annotated == 'true' %}
+                    fill_playlist(tracks);
+                {% else %}
+                    $('#attachment').prepend('<div id="attached" class="info"><span id="toggle_attach">Attach</span> a song to this landscape</div>');
+                {% endif %}
+            {% endif %}
+        });
+    </script>
+
+{% endblock %}
+
+
+{% block header %}
+    <!--<h1>ScapeList for <a href="/scape/{{ keyword }}">{{ keyword }}</a> </h1>-->
+{% endblock %}
+
+{% block content %}
+
+    <div id="image_detail">
+        <img src="{{ media.standard_resolution }}" alt="{{ keyword }}"/>
+        <a href="/scape/{{ keyword }}">{{ keyword }}</a>
+    </div>
+    <div id="song_detail">
+        <div id="playlist">
+        </div>
+        <div id="attachment">
+        {% if user.is_authenticated %}
+            {% if annotated == 'false' %}
+            <!--<button id="opener">Attach a song to the image</button>-->
+            <div id="add_song" title="Attach song to image">
+                <div id="query">
+                    <form autocomplete="off">
+                        <input type="text" id="suggest" class="textquery ui-corner-all"/>
+                        <input type="submit" id="submit_song" value="Search" />
+                    </form>
+                </div>
+                <div id="results">
+                </div>
+            </div>
+            {% else %}
+                <div id="attached" class="info">You've already attached a song to this landscape</div>
+            {% endif %}
+    
+        {% else %}
+            <div id="guest" class="warning">If you'd like to see the related playlist and/or add a song to this landscape, please <a href="/accounts/login?next={% firstof request.path '/' %}">login</a></div>
+        {% endif %}
+        <div id="preview">
+        </div>
+        </div>
+
+    </div>
+    
+{% endblock %}
+
