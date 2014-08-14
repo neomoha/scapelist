@@ -25,6 +25,9 @@ Install Dependencies
 * Mac OS X:
   * export PATH=$PATH:/usr/local/mysql/bin
   * pip install -r requirements
+  
+You need an API key for both [Instagram](http://instagram.com/developer/) and [Echonest](https://developer.echonest.com/account/register)
+Once you get these API keys, replace the text in *scape/views.py*s
 
 Create database
 ------
@@ -36,12 +39,12 @@ In MySQL run:
 Create tables
 ------
 
-* Edit django settings (located at scapelist/settings.py): change the database name, user name and user password accordingly
+* Edit django settings (located at *scapelist/settings.py*): change the database name, user name and user password accordingly
 * Run: 'python manage.py syncdb'
 
 Run local server
 ------
 
 * Run: 'fab up'
-* Open a browser and load 'http://0.0.0.0:8007' (default url, if you want to change it edit fabfile.py)
+* Open a browser and load 'http://0.0.0.0:8007' (default url, if you want to change it edit *fabfile.py*)
 
